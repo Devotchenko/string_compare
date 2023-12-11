@@ -1,11 +1,11 @@
 ﻿#include <iostream>
 #include <fstream>
-#include <iomanip>	
-#include <cstring>	
+#include <iomanip>  
+#include <cstring>  
 #include <string>
 #include <cctype>
+#include <new>  
 
-// Функция для проверки наличия символа в строке
 bool contains(const char* str, char ch) {
     while (*str != '\0') {
         if (*str == ch) {
@@ -16,16 +16,15 @@ bool contains(const char* str, char ch) {
     return false;
 }
 
-// Основная функция для формирования новой строки из общих символов двух строк
 char* commonCharsC(char* destination, const char* source1, const char* source2) {
-    char* dest = destination; 
+    char* dest = destination;
     while (*source1 != '\0') {
-        if (contains(source2, *source1)) {
+        if (contains(source2, *source1) && !contains(destination, *source1)) {
             *dest++ = *source1;
         }
         ++source1;
     }
-    *dest = '\0'; 
+    *dest = '\0';
     return destination;
 }
 
@@ -33,9 +32,8 @@ std::string commonCharsCpp(const std::string& source1, const std::string& source
     std::string result;
 
     for (char ch : source1) {
-        // Проверяем, содержится ли символ из первой строки во второй строке
         if (source2.find(ch) != std::string::npos && result.find(ch) == std::string::npos) {
-            result += ch; // Добавляем символ в результат, если он есть в обеих строках и ещё не добавлен
+            result += ch;
         }
     }
 
@@ -43,38 +41,39 @@ std::string commonCharsCpp(const std::string& source1, const std::string& source
 }
 
 int main() {
-    std::ifstream file("infile.txt"); 
+    std::ifstream file("infile.txt");
     if (!file) {
         std::cerr << "cant open file" << std::endl;
         return 1;
     }
 
-    // Считывание данных из файла
-    std::string line;
-    while (std::getline(file, line)) {
-        int length = std::stoi(line);
-        char* cStyleStr = new char[length + 1];
-        file.getline(cStyleStr, length + 1);
+    try {
+        std::string line;
+        while (std::getline(file, line)) {
+            int length = std::stoi(line);
+            char* cStyleStr = new char[length + 1];
+            file.getline(cStyleStr, length + 1);
 
-        // Дополнительное считывание для второй строки
-        std::getline(file, line);
-        int length2 = std::stoi(line);
-        char* cStyleStr2 = new char[length2 + 1];
-        file.getline(cStyleStr2, length2 + 1);
+            std::getline(file, line);
+            int length2 = std::stoi(line);
+            char* cStyleStr2 = new char[length2 + 1];
+            file.getline(cStyleStr2, length2 + 1);
 
-        // Использование функции в стиле C
-        char* resultC = new char[length + 1];
-        commonCharsC(resultC, cStyleStr, cStyleStr2);
-        std::cout << "C-style: " << resultC << std::endl;
+            char* resultC = new char[length + 1];
+            commonCharsC(resultC, cStyleStr, cStyleStr2);
+            std::cout << "C-style: " << resultC << std::endl;
 
-        // Использование функции в стиле C++
-        std::string resultCpp = commonCharsCpp(cStyleStr, cStyleStr2);
-        std::cout << "C++-style: " << resultCpp << std::endl;
+            std::string resultCpp = commonCharsCpp(cStyleStr, cStyleStr2);
+            std::cout << "C++-style: " << resultCpp << std::endl;
 
-        // Освобождение памяти
-        delete[] cStyleStr;
-        delete[] cStyleStr2;
-        delete[] resultC;
+            delete[] cStyleStr;
+            delete[] cStyleStr2;
+            delete[] resultC;
+        }
+    }
+    catch (const std::bad_alloc& e) {
+        std::cerr << "Memory allocation failed: " << e.what() << std::endl;
+        return 1;
     }
 
     return 0;
